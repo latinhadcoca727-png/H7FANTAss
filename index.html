@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>H7 Sensibilidade</title>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
+body{
+ height:100vh;
+ background:radial-gradient(circle at top,#1a1a1a,#000);
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ color:#fff
+}
+.box{
+ width:340px;
+ background:#111;
+ border-radius:14px;
+ padding:30px 25px;
+ box-shadow:0 0 30px rgba(255,0,0,.25);
+ text-align:center
+}
+.logo{
+ font-size:36px;
+ font-weight:900;
+ letter-spacing:2px;
+ margin-bottom:20px
+}
+.logo span{color:#e50914}
+input{
+ width:100%;
+ padding:14px;
+ border-radius:8px;
+ border:none;
+ outline:none;
+ font-size:15px;
+ margin-bottom:15px;
+ background:#1c1c1c;
+ color:#fff
+}
+button{
+ width:100%;
+ padding:14px;
+ border-radius:8px;
+ border:none;
+ font-size:15px;
+ font-weight:bold;
+ cursor:pointer;
+ margin-top:10px
+}
+.btn-main{
+ background:linear-gradient(135deg,#e50914,#ff2a2a);
+ color:#fff
+}
+.btn-support{
+ background:transparent;
+ color:#e50914;
+ border:2px solid #e50914
+}
+.creator-btn{
+ margin-top:18px;
+ padding:10px;
+ font-size:13px;
+ font-weight:900;
+ letter-spacing:2px;
+ color:#ff2a2a;
+ background:transparent;
+ border:2px solid #ff2a2a;
+ border-radius:8px;
+ text-transform:uppercase;
+ font-family:"Courier New",monospace
+}
+.hidden{display:none}
+
+.sensi{
+ background:#1a1a1a;
+ border-radius:10px;
+ padding:15px;
+ margin-top:15px;
+ text-align:left;
+ font-size:14px
+}
+.sensi div{margin:6px 0}
+
+/* OVERLAY */
+.overlay{
+ position:fixed;
+ inset:0;
+ background:rgba(0,0,0,.95);
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ z-index:999
+}
+.overlay.hidden{display:none}
+
+.loader{
+ text-align:center;
+ font-size:18px;
+ font-weight:bold;
+ letter-spacing:1px;
+ color:#ff2a2a
+}
+</style>
+</head>
+
+<body>
+
+<!-- LOGIN -->
+<div class="box" id="loginBox">
+ <div class="logo">H7 <span>VENDAS</span></div>
+ <input id="keyInput" placeholder="Digite sua key">
+ <button class="btn-main" onclick="login()">LOGIN</button>
+ <button class="btn-support" onclick="openSupport()">SUPPORT</button>
+ <button class="creator-btn" onclick="openCreator()">CRIADOR</button>
+</div>
+
+<!-- PAINEL -->
+<div class="box hidden" id="panelBox">
+ <div class="logo">H7 <span>SENSI</span></div>
+ <input id="deviceInput" placeholder="Ex: Samsung Galaxy A12">
+ <button class="btn-main" onclick="gerarSensi()">GERAR SENSIBILIDADE</button>
+ <button class="btn-support" onclick="estabilizarMira()">ESTABILIZAR MIRA</button>
+
+ <div id="deviceName" style="margin-top:10px;font-weight:bold"></div>
+
+ <div class="sensi hidden" id="sensiBox">
+  <div>🎯 Geral: <span id="geral"></span></div>
+  <div>🔴 PONTO VERMELHO: <span id="reddot"></span></div>
+  <div>🔍 Mira 2x: <span id="mira2x"></span></div>
+  <div>🔭 Mira 4x: <span id="mira4x"></span></div>
+  <div>💥 AWM: <span id="awm"></span></div>
+  <div>👁️ Olhadinha: <span id="olhadinha"></span></div>
+  <div style="margin-top:10px;font-weight:bold;color:#ff2a2a">
+   📱 DPI PERFEITA: <span id="dpi"></span>
+  </div>
+ </div>
+
+ <button class="creator-btn" onclick="openCreator()">CRIADOR</button>
+</div>
+
+<!-- OVERLAY -->
+<div id="overlay" class="overlay hidden">
+ <div class="loader" id="loaderText">ESTABILIZANDO MIRA 10%</div>
+</div>
+
+<script>
+// LOGIN
+const KEYS={"RFL027":{y:2026,m:12,d:31,h:23,min:59,s:59}};
+function login(){
+ const k=keyInput.value.trim();
+ if(!KEYS[k]) return alert("Key inválida");
+ loginBox.classList.add("hidden");
+ panelBox.classList.remove("hidden");
+}
+function openSupport(){window.open("https://discord.gg/vJY5mrrsP")}
+function openCreator(){window.open("https://tiktok.com/@rfljb2")}
+
+// PERFIL
+const PERFIL_MARCAS={
+ samsung:{base:158,dpi:410},
+ iphone:{base:155,dpi:460},
+ motorola:{base:157,dpi:415},
+ xiaomi:{base:158,dpi:420},
+ poco:{base:159,dpi:430}
+};
+
+function extrairModelo(n){const m=n.match(/\d+/);return m?parseInt(m[0]):null;}
+function gerarHash(s){let h=0;for(let c of s)h=(h<<5)-h+c.charCodeAt(0);return Math.abs(h);}
+
+// GERAR SENSI
+function gerarSensi(){
+ const raw=deviceInput.value.trim().toLowerCase();
+ const marca=Object.keys(PERFIL_MARCAS).find(m=>raw.includes(m));
+ const modelo=extrairModelo(raw);
+ if(!marca||modelo===null) return alert("❌ DISPOSITIVO INVÁLIDO");
+
+ const perfil=PERFIL_MARCAS[marca];
+ const h=gerarHash(raw);
+ const base=perfil.base+(modelo%5);
+
+ sensiBox.classList.remove("hidden");
+ deviceName.innerText="Dispositivo: "+raw.toUpperCase();
+
+ geral.innerText=base;
+ reddot.innerText=base+15+(h%3);
+ mira2x.innerText=base+8+(h%3);
+ mira4x.innerText=base+4+(h%2);
+ awm.innerText=base+2+(h%2);
+ olhadinha.innerText=base+13+(h%3);
+ dpi.innerText=perfil.dpi+(modelo%10);
+}
+
+// ESTABILIZAR MIRA (VISUAL)
+let estabilizado=false;
+function estabilizarMira(){
+ if(estabilizado) return alert("❌ MIRA JÁ ESTABILIZADA");
+
+ overlay.classList.remove("hidden");
+ let p=10;
+ const textos=[
+  "ESTABILIZANDO MIRA",
+  "OTIMIZANDO FPS",
+  "REDUZINDO LAG",
+  "AJUSTANDO FRAME TIME",
+  "CONCLUÍDO"
+ ];
+
+ const t=setInterval(()=>{
+  loaderText.innerText=`${textos[Math.min(Math.floor(p/25),4)]} ${p}%`;
+  p+=10;
+  if(p>100){
+   clearInterval(t);
+   setTimeout(()=>{
+    overlay.classList.add("hidden");
+    estabilizado=true;
+   },1200);
+  }
+ },400);
+}
+</script>
+
+</body>
+</html>
